@@ -6,6 +6,13 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      // Local dev: mirrors production /_/backend route
+      '/_/backend': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/_\/backend/, '')
+      },
+      // Legacy direct /api calls
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true
@@ -13,3 +20,4 @@ export default defineConfig({
     }
   }
 })
+
