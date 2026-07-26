@@ -52,3 +52,53 @@ class TicketUpdateResponse(BaseModel):
     """Response when updating a ticket"""
     success: bool
     updated_at: datetime
+
+
+# ============ ADMIN PROFILE SCHEMAS ============
+
+class AdminProfileSchema(BaseModel):
+    name: str
+    role: str
+    email: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class AdminProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    email: Optional[str] = None
+
+
+# ============ TEAM MEMBER SCHEMAS ============
+
+class TeamMemberSchema(BaseModel):
+    id: int
+    name: str
+    role: str
+    email: str
+    status: str
+    tickets_handled: int
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+# ============ ANALYTICS SCHEMAS ============
+
+class TicketByDate(BaseModel):
+    date: str
+    count: int
+
+
+class AnalyticsData(BaseModel):
+    total_tickets: int
+    open_tickets: int
+    in_progress_tickets: int
+    closed_tickets: int
+    tickets_by_date: list[TicketByDate]
+    resolution_rate: float
+

@@ -40,3 +40,35 @@ export async function updateTicket(ticketId, data) {
   }
   return res.json()
 }
+
+export async function getAdminProfile() {
+  const res = await fetch(`${API_URL}/admin/profile`)
+  if (!res.ok) throw new Error('Failed to fetch admin profile')
+  return res.json()
+}
+
+export async function updateAdminProfile(data) {
+  const res = await fetch(`${API_URL}/admin/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Failed to update admin profile')
+  }
+  return res.json()
+}
+
+export async function getTeamMembers() {
+  const res = await fetch(`${API_URL}/team`)
+  if (!res.ok) throw new Error('Failed to fetch team members')
+  return res.json()
+}
+
+export async function getAnalytics() {
+  const res = await fetch(`${API_URL}/analytics`)
+  if (!res.ok) throw new Error('Failed to fetch analytics')
+  return res.json()
+}
+

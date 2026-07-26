@@ -1,13 +1,13 @@
 export default function SearchBar({ value, onChange }) {
   return (
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+    <div className="relative flex items-center bg-black/35 border border-white/5 rounded-xl px-4 py-2.5 transition-all duration-300 focus-within:border-cyan-400/40 focus-within:shadow-[0_0_15px_rgba(34,211,238,0.1)]">
+      <span className="material-symbols-outlined text-[#bbc9cd]/60 select-none text-[20px]">search</span>
       <input
         type="text"
-        placeholder="Search by name, email, or description..."
+        placeholder="Search tickets by subject, description, name..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+        className="bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-[#dde4e5] w-full ml-3 placeholder-[#bbc9cd]/30"
       />
     </div>
   )

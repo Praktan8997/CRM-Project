@@ -41,3 +41,30 @@ class Ticket(Base):
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AdminProfile(Base):
+    """
+    Persists admin profile details.
+    """
+    __tablename__ = "admin_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, default="Alex Rivera")
+    role = Column(String, default="Senior Lead")
+    email = Column(String, default="alex.rivera@supportflow.com")
+
+
+class TeamMember(Base):
+    """
+    Persists team directory profiles.
+    """
+    __tablename__ = "team_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    role = Column(String)
+    email = Column(String)
+    status = Column(String, default="Active")  # Active, Offline, Away
+    tickets_handled = Column(Integer, default=0)
+

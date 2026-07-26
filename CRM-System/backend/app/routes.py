@@ -3,10 +3,14 @@ from sqlalchemy.orm import Session
 from .database import SessionLocal
 from .schemas import (
     TicketCreate, TicketUpdate, TicketCreateResponse, 
-    TicketListItem, TicketDetail, TicketUpdateResponse
+    TicketListItem, TicketDetail, TicketUpdateResponse,
+    AdminProfileSchema, AdminProfileUpdate, TeamMemberSchema,
+    AnalyticsData, TicketByDate
 )
 from .crud import create_ticket, get_tickets, get_ticket, update_ticket, ticket_exists
+from .models import AdminProfile, TeamMember, Ticket
 from typing import Optional, List
+from datetime import datetime, timedelta
 
 router = APIRouter()
 
@@ -152,6 +156,95 @@ def update_ticket_route(ticket_id: str, ticket: TicketUpdate, db: Session = Depe
     return TicketUpdateResponse(
         success=True,
         updated_at=updated_ticket.updated_at
+    )
+
+
+# ============ ADMIN SETTINGS PROFILE ROUTES ============
+
+@router.get("/admin/profile", response_model=AdminProfileSchema)
+def get_admin_profile(db: Session = Depends(get_db)):
+    """Retrieve the settings profile of the administrator."""
+    profile = db.query(AdminProfile).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Admin profile not found")
+    return profile
+
+
+@router.put("/admin/profile", response_model=AdminProfileSchema)
+def update_admin_profile(profile_data: AdminProfileUpdate, db: Session = Depends(get_db)):
+    """Update the administrator settings profile."""
+    profile = db.query(AdminProfile).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Admin profile not found")
+    
+    if profile_data.name is not None:
+        profile.name = profile_data.name
+    if profile_data.role is not None:
+        profile.role = profile_data.role
+    if profile_data.email is not None:
+        profile.email = profile_data.email
+        
+    db.commit()
+    db.refresh(profile)
+    return profile
+
+
+# ============ TEAM DIRECTORY ROUTES ============
+
+@router.get("/team", response_model=List[TeamMemberSchema])
+def get_team_directory(db: Session = Depends(get_db)):
+    """List all support team members."""
+    members = db.query(TeamMember).all()
+    return members
+
+
+# ============ REAL-TIME ANALYTICS ROUTES ============
+
+@router.get("/analytics", response_model=AnalyticsData)
+def get_ticket_analytics(db: Session = Depends(get_db)):
+    """Compute and compile real-time ticket performance and volume stats."""
+    tickets = db.query(Ticket).all()
+    total = len(tickets)
+    
+    open_count = 0
+    in_progress = 0
+    closed = 0
+    
+    for t in tickets:
+        if t.status == "Open":
+            open_count += 1
+        elif t.status == "In Progress":
+            in_progress += 1
+        elif t.status == "Closed":
+            closed += 1
+            
+    # Group by date for the last 7 days
+    today = datetime.utcnow().date()
+    date_buckets = {}
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        date_str = day.strftime("%Y-%m-%d")
+        date_buckets[date_str] = 0
+        
+    for t in tickets:
+        t_date_str = t.created_at.date().strftime("%Y-%m-%d")
+        if t_date_str in date_buckets:
+            date_buckets[t_date_str] += 1
+            
+    tickets_by_date = [
+        TicketByDate(date=date, count=count)
+        for date, count in sorted(date_buckets.items())
+    ]
+    
+    resolution_rate = (closed / total * 100) if total > 0 else 0.0
+    
+    return AnalyticsData(
+        total_tickets=total,
+        open_tickets=open_count,
+        in_progress_tickets=in_progress,
+        closed_tickets=closed,
+        tickets_by_date=tickets_by_date,
+        resolution_rate=round(resolution_rate, 2)
     )
 
 
